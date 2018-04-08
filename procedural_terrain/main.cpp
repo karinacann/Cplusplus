@@ -82,7 +82,7 @@ int main(int, char**){
 
         yaw += delta[0];
         pitch += delta[1];
-
+//?
         if(pitch > PI/2.0f - 0.01f)  pitch =  PI/2.0f - 0.01f;
         if(pitch <  -PI/2.0f + 0.01f) pitch =  -PI/2.0f + 0.01f;
 
@@ -94,7 +94,7 @@ int main(int, char**){
         cameraFront = front.normalized();
         mouse = m.position;
     });
-
+///8.
     window.add_listener<KeyEvent>([&](const KeyEvent &k){
         ///--- TODO: Implement WASD keys HINT: compare k.key to GLFW_KEY_W
 
@@ -149,40 +149,47 @@ void init(){
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 }
-
+///1. use GL_PRIMITIVE_RESTART
 void genTerrainMesh() {
     /// Create a flat (z=0) mesh for the terrain with given dimensions, using triangle strips
     terrainMesh = std::unique_ptr<GPUMesh>(new GPUMesh());
-    int n_width = 256; // Grid resolution
-    int n_height = 256;
+    int n_width = 10; // Grid resolution
+    int n_height = 10;//256
     float f_width = 5.0f; // Grid width, centered at 0,0
     float f_height = 5.0f;
 
     std::vector<Vec3> points;
     std::vector<unsigned int> indices;
-    std::vector<Vec2> texCoords;
+    std::vector<Vec2> texCoords;    //little hazy on this understanding
 
-    ///--- Vertex positions, tex coords
-    for(int j=0; j<n_height; ++j) {
+    ///--- Vertex positions, tex coords - the actual places in space
+    for(int j=0; j<n_height; ++j) {    //other code has one less incrementation. i incremented it, but this might mess with the textureCoords
         for(int i=0; i<n_width; ++i) {
             /// TODO: calculate vertex positions, texture indices done for you
-            points.push_back(Vec3(0, 0, 0.0f));
+            points.push_back(Vec3((i/(float)n_width)*f_width, (j/(float)n_height)*f_height, 0.0f));   //to test
             texCoords.push_back( Vec2( i/(float)(n_width-1), j/(float)(n_height-1)) );
         }
     }
 
+    for (int i=0;i<points.size();i++){
+        std::cout<<points[i].x()<<','<<points[i].y()<<std::endl;
+    }
     ///--- Element indices using triangle strips
-    for(int j=0; j<n_height-1; ++j) {
+    for(int j=0; j<n_height-1; ++j) { //pretty sure i want this to iterate twice
         ///--- The two vertices at the base of each strip
-        indices.push_back(j*n_width);
+        indices.push_back((j*n_width)); //starts at 0
         indices.push_back((j+1)*n_width);
-        for(int i=1; i<n_width; ++i) {
+        for(int i=1; i<n_width; ++i) { //but this may be wrong
             /// TODO: push_back next two vertices HINT: Each one will generate a new triangler
-            indices.push_back(0);
-            indices.push_back(0);
+            indices.push_back((j*n_width)+i);
+            indices.push_back(((j+1)*n_width)+i);
         }
         ///--- A new strip will begin when this index is reached
         indices.push_back(resPrim);
+    }
+
+    for (int i=0;i<indices.size();i++){
+        std::cout<<indices[i]<<std::endl;
     }
 
     terrainMesh->set_vbo<Vec3>("vposition", points);
@@ -190,7 +197,7 @@ void genTerrainMesh() {
     terrainMesh->set_vtexcoord(texCoords);
 }
 
-void genCubeMesh() {
+void genCubeMesh()  {
     ///--- Generate a cube mesh for skybox, already done
     skyboxMesh = std::unique_ptr<GPUMesh>(new GPUMesh());
     std::vector<Vec3> points;
@@ -207,6 +214,7 @@ void genCubeMesh() {
     skyboxMesh->set_triangles(indices);
 }
 
+///7.
 void drawSkybox() {
     skyboxShader->bind();
 
@@ -230,6 +238,7 @@ void drawSkybox() {
     skyboxShader->unbind();
 }
 
+///2.
 void drawTerrain() {
     terrainShader->bind();
 
@@ -261,13 +270,13 @@ void drawTerrain() {
 
     // Draw terrain using triangle strips
     glEnable(GL_DEPTH_TEST);
-    // glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     terrainMesh->set_attributes(*terrainShader);
     terrainMesh->set_mode(GL_TRIANGLE_STRIP);
     glEnable(GL_PRIMITIVE_RESTART);
     glPrimitiveRestartIndex(resPrim);
     /// TODO: Uncomment line below once this function is implemented
-    // terrainMesh->draw();
+    terrainMesh->draw();
 
     terrainShader->unbind();
 }
