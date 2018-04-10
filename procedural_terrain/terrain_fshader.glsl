@@ -40,7 +40,7 @@ void main() {
     vec3 c = vec3((texture(noiseTex, uv).r + 1.0f)/2.0f);
     /// TODO: Calculate ambient, diffuse, and specular lighting
     /// HINT: max(,) dot(,) reflect(,) normalize()
-    c = (N+ vec3(1.0)) / 2.0;
+   // c = (N+ vec3(1.0)) / 2.0;
     color = vec4(c,1);
 }
 )"
