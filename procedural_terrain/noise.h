@@ -5,9 +5,10 @@
 
 using namespace OpenGP;
 
+///3.
 inline float lerp(float x, float y, float t) {
     /// TODO: Implement linear interpolation between x and y
-    return 0.0f;
+    return x+t*(y-x);
 }
 
 inline float fade(float t) {
@@ -18,15 +19,17 @@ inline float rand01() {
     return ((float) std::rand())/((float) RAND_MAX);
 }
 
+
 float* perlin2D(const int width, const int height, const int period=64);
 
+///4.
 /// Generates a heightmap using fractional brownian motion
 R32FTexture* fBm2DTexture() {
 
     ///--- Precompute perlin noise on a 2D grid
     const int width = 512;
     const int height = 512;
-    float *perlin_data = perlin2D(width, height, 128);
+    float *perlin_data = perlin2D(width, height, 30);
 
     ///--- fBm parameters
     float H = 0.8f;
@@ -44,19 +47,26 @@ R32FTexture* fBm2DTexture() {
 
     ///--- Precompute exponent array
     float *exponent_array = new float[octaves];
-    float f = 1.0f;
+    float f = 1.0f;     //freqency
     for (int i = 0; i < octaves; ++i) {
         /// TODO: Implement this step according to Musgraves paper on fBM
-
+        exponent_array[i] = std::pow(f, -H);    //to test
+        f *= lacunarity;    //to test
     }
 
     for (int i = 0; i < width; ++ i) {
         for (int j = 0; j < height; ++ j) {
             int I = i;
             int J = j;
+
+
             for(int k = 0; k < octaves; ++k) {
                 /// TODO: Get perlin noise at I,J, add offset, multiply by proper term and add to noise_data
-                noise_data[i+j*height] += 0;
+                //calculate modulo
+
+
+
+                noise_data[i+j*height] += perlin_data[(I+J*height)%(height*width)] * exponent_array[k];  //needs tested too
 
                 ///--- Point to sample at next octave
                 I *= (int) lacunarity;
@@ -67,7 +77,7 @@ R32FTexture* fBm2DTexture() {
 
     R32FTexture* _tex = new R32FTexture();
     _tex->upload_raw(width, height, noise_data);
-
+  // _tex->upload_raw(width, height, perlin_data);
     delete perlin_data;
     delete noise_data;
     delete exponent_array;
@@ -75,6 +85,8 @@ R32FTexture* fBm2DTexture() {
     return _tex;
 }
 
+
+///3.
 float* perlin2D(const int width, const int height, const int period) {
 
     ///--- Precompute random gradients
@@ -123,17 +135,17 @@ float* perlin2D(const int width, const int height, const int period) {
             Vec2 d(dx-1,    1 - dy); // bottomright
 
             ///TODO: Get scalars at corners HINT: take dot product of gradient and corresponding direction
-            float s = 0;
-            float t = 0;
-            float u = 0;
-            float v = 0;
+            float s = a.dot(topleft);
+            float t = b.dot(topright);
+            float u = c.dot(bottomleft);
+            float v = d.dot(bottomright);
 
             ///TODO: Interpolate along "x" HINT: use fade(dx) as t
-            float st = 0;
-            float uv = 0;
+            float st = lerp(s,t,fade(dx));  //think
+            float uv = lerp(u,v,fade(dx));
 
             ///TODO: Interpolate along "y"
-            float noise = 0;
+            float noise = lerp(st, uv, fade(dy));
 
             perlin_data[i+j*height] = noise;
         }

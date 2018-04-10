@@ -17,6 +17,7 @@ in vec3 fragPos;
 
 out vec4 color;
 
+///9.
 void main() {
 
     // Directional light source
@@ -28,18 +29,18 @@ void main() {
     /// TODO: Calculate surface normal N
     /// HINT: Use textureOffset(,,) to read height at uv + pixelwise offset
     /// HINT: Account for texture x,y dimensions in world space coordinates (default f_width=f_height=5)
-    vec3 A = vec3( 0 );
-    vec3 B = vec3( 0 );
-    vec3 C = vec3( 0 );
-    vec3 D = vec3( 0 );
+    vec3 A = vec3( uv.x + 1.0/size.x, uv.y, textureOffset(noiseTex, uv, ivec2(1,0)) );
+    vec3 B = vec3( uv.x - 1.0/size.x, uv.y, textureOffset(noiseTex, uv, ivec2(-1,0)));
+    vec3 C = vec3(  uv.x, uv.y + 1.0/size.y, textureOffset(noiseTex, uv, ivec2(0,1)));
+    vec3 D = vec3( uv.x, uv.y - 1.0/size.y, textureOffset(noiseTex, uv, ivec2(0,-1)));
     vec3 N = normalize( cross(normalize(A-B), normalize(C-D)) );
 
     /// TODO: Texture according to height and slope
     /// HINT: Read noiseTex for height at uv
-
+    vec3 c = vec3((texture(noiseTex, uv).r + 1.0f)/2.0f);
     /// TODO: Calculate ambient, diffuse, and specular lighting
     /// HINT: max(,) dot(,) reflect(,) normalize()
-
-    color = vec4(0,0,0,1);
+    c = (N+ vec3(1.0)) / 2.0;
+    color = vec4(c,1);
 }
 )"
