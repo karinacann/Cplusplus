@@ -153,8 +153,8 @@ void init(){
 void genTerrainMesh() {
     /// Create a flat (z=0) mesh for the terrain with given dimensions, using triangle strips
     terrainMesh = std::unique_ptr<GPUMesh>(new GPUMesh());
-    int n_width = 256; // Grid resolution
-    int n_height = 256;
+    int n_width = 10; // Grid resolution
+    int n_height = 10;
     float f_width = 5.0f; // Grid width, centered at 0,0
     float f_height = 5.0f;
 
@@ -170,7 +170,6 @@ void genTerrainMesh() {
             texCoords.push_back( Vec2( i/(float)(n_width-1), j/(float)(n_height-1)) );
         }
     }
-
     ///--- Element indices using triangle strips
     for(int j=0; j<n_height-1; ++j) {
         ///--- The two vertices at the base of each strip
@@ -220,13 +219,18 @@ void drawSkybox() {
     /// TODO: Bind Textures and set uniform
     /// HINT: Use GL_TEXTURE0, and texture type GL_TEXTURE_CUBE_MAP
 
-
+    glActiveTexture(GL_TEXTURE0);
+    //skyboxTexture->bind();
+ //   skyboxShader->set_uniform("noiseTex", 0);
+     glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
 
     /// TODO: Set atrributes, draw cube using GL_TRIANGLE_STRIP mode
     glEnable(GL_DEPTH_TEST);
+    skyboxMesh->set_mode(GL_TRIANGLE_STRIP);
+    skyboxMesh->set_attributes(*skyboxShader);
+    skyboxMesh->draw();
 
-
-
+   // skyboxTexture->unbind();
     skyboxShader->unbind();
 }
 
@@ -238,12 +242,12 @@ void drawTerrain() {
     terrainShader->set_uniform("M", M);
 
     Vec3 look = cameraFront + cameraPos;
-    Mat4x4 V = Mat4x4::Identity(); /// HERE
-   //  Mat4x4 V = lookAt(Vec3(0,0,0.5), Vec3(0.5,0.5,0), Vec3(0,0,1));
+  //  Mat4x4 V = Mat4x4::Identity(); /// HERE
+    Mat4x4 V = lookAt(Vec3(0.0,0,2), Vec3(1,0.5,0), Vec3(0,0,1));
     terrainShader->set_uniform("V", V);
 
-    Mat4x4 P = Mat4x4::Identity(); /// AND HERE
-   //  Mat4x4 P = perspective(70.0f, width / (float)height, 0.01f, 10.0f);
+    //Mat4x4 P = Mat4x4::Identity(); /// AND HERE
+    Mat4x4 P = perspective(90.0f, width / (float)height, 0.01f, 10.0f);
     terrainShader->set_uniform("P", P);
 
     terrainShader->set_uniform("viewPos", cameraPos);
@@ -257,8 +261,6 @@ void drawTerrain() {
         ++i;
     }
     /// TODO: Bind height texture to GL_TEXTURE0 and set uniform noiseTex
-
-
     glActiveTexture(GL_TEXTURE0);
     heightTexture->bind();
     terrainShader->set_uniform("noiseTex", 0);
@@ -270,7 +272,6 @@ void drawTerrain() {
 
 
     heightTexture->unbind();
-
 
     // Draw terrain using triangle strips
     glEnable(GL_DEPTH_TEST);

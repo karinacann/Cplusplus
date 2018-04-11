@@ -36,8 +36,18 @@ void main() {
     vec3 N = normalize( cross(normalize(A-B), normalize(C-D)) );
 
     /// TODO: Texture according to height and slope
+    float slope = 1.0f-N.y;
+
+    vec3 c = vec3(0,0,0);
+
+    float h=texture(noiseTex,uv).r;
+
+    if (h < .1 ){
+        c = vec3(texture(water, uv));
+    } else {
+     c = vec3(texture(sand, uv));
+    }
     /// HINT: Read noiseTex for height at uv
-    vec3 c = vec3((texture(noiseTex, uv).r + 1.0f)/2.0f);
     /// TODO: Calculate ambient, diffuse, and specular lighting
     /// HINT: max(,) dot(,) reflect(,) normalize()
 
@@ -47,9 +57,7 @@ float maxNDotH = max(0.0,dot(N,lightDir));
  vec3 specular = vec3(0.5,0.5,0.5)*(pow(maxNDotH,100));
  vec3 ambient = 0.5*vec3(0.6,0.3,0.3);
 
-c += lambert+specular+ambient;
-
-
+//c += lambert+specular+ambient;
    // c = (N+ vec3(1.0)) / 2.0;
     color = vec4(c,1);
 }

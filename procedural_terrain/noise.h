@@ -62,10 +62,6 @@ R32FTexture* fBm2DTexture() {
 
             for(int k = 0; k < octaves; ++k) {
                 /// TODO: Get perlin noise at I,J, add offset, multiply by proper term and add to noise_data
-                //calculate modulo
-
-
-
                 noise_data[i+j*height] += perlin_data[(I+J*height)%(height*width)] * exponent_array[k];  //needs tested too
 
                 ///--- Point to sample at next octave
