@@ -97,6 +97,36 @@ int main(int, char**){
 
     window.add_listener<KeyEvent>([&](const KeyEvent &k){
         ///--- TODO: Implement WASD keys HINT: compare k.key to GLFW_KEY_W
+    //cameraPos = Vec3(0,0,3);
+            switch(k.key){
+                case GLFW_KEY_W:
+                    cameraPos.x() += .1;
+                    break;
+                case GLFW_KEY_A:
+                    cameraPos.y() -= .1;
+                    break;
+                case GLFW_KEY_S:
+                    cameraPos.x() -= .1;
+                    break;
+                case GLFW_KEY_D:
+                    cameraPos.y() += .1;
+                    break;
+                case GLFW_KEY_R:
+                    cameraPos.z() += .1;
+                    break;
+                case GLFW_KEY_F:
+                    cameraPos.z() -= .1;
+                    break;
+
+                case GLFW_KEY_Q:
+                    cameraFront.y() -= .1;
+                    break;
+                case GLFW_KEY_E:
+                    cameraFront.y() += .1;
+                    break;
+
+
+            }
 
     });
 
@@ -153,8 +183,8 @@ void init(){
 void genTerrainMesh() {
     /// Create a flat (z=0) mesh for the terrain with given dimensions, using triangle strips
     terrainMesh = std::unique_ptr<GPUMesh>(new GPUMesh());
-    int n_width = 10; // Grid resolution
-    int n_height = 10;
+    int n_width = 256; // Grid resolution
+    int n_height = 256;
     float f_width = 5.0f; // Grid width, centered at 0,0
     float f_height = 5.0f;
 
@@ -222,8 +252,9 @@ void drawSkybox() {
     glActiveTexture(GL_TEXTURE0);
     //skyboxTexture->bind();
  //   skyboxShader->set_uniform("noiseTex", 0);
-     glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+ //    glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
 
+     skyboxShader->set_uniform("GL_TEXTURE_CUBE_MAP",0);
     /// TODO: Set atrributes, draw cube using GL_TRIANGLE_STRIP mode
     glEnable(GL_DEPTH_TEST);
     skyboxMesh->set_mode(GL_TRIANGLE_STRIP);
@@ -243,11 +274,12 @@ void drawTerrain() {
 
     Vec3 look = cameraFront + cameraPos;
   //  Mat4x4 V = Mat4x4::Identity(); /// HERE
-    Mat4x4 V = lookAt(Vec3(0.0,0,2), Vec3(1,0.5,0), Vec3(0,0,1));
+   // Mat4x4 V = lookAt(Vec3(0.0,0,2), Vec3(1,0.5,0), Vec3(0,0,1));
+    Mat4x4 V = lookAt(cameraPos, look, cameraUp);
     terrainShader->set_uniform("V", V);
 
     //Mat4x4 P = Mat4x4::Identity(); /// AND HERE
-    Mat4x4 P = perspective(90.0f, width / (float)height, 0.01f, 10.0f);
+    Mat4x4 P = perspective(80.0f, width / (float)height, 0.1f, 60.0f);
     terrainShader->set_uniform("P", P);
 
     terrainShader->set_uniform("viewPos", cameraPos);

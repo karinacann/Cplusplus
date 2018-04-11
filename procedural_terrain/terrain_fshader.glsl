@@ -29,36 +29,46 @@ void main() {
     /// TODO: Calculate surface normal N
     /// HINT: Use textureOffset(,,) to read height at uv + pixelwise offset
     /// HINT: Account for texture x,y dimensions in world space coordinates (default f_width=f_height=5)
-    vec3 A = vec3( uv.x + 1.0/size.x, uv.y, textureOffset(noiseTex, uv, ivec2(1,0)) );
-    vec3 B = vec3( uv.x - 1.0/size.x, uv.y, textureOffset(noiseTex, uv, ivec2(-1,0)));
-    vec3 C = vec3(  uv.x, uv.y + 1.0/size.y, textureOffset(noiseTex, uv, ivec2(0,1)));
-    vec3 D = vec3( uv.x, uv.y - 1.0/size.y, textureOffset(noiseTex, uv, ivec2(0,-1)));
-    vec3 N = normalize( cross(normalize(A-B), normalize(C-D)) );
+    const float f_width = 5.0f;
+    const float f_height = 5.0f;
+    float h;
 
-    /// TODO: Texture according to height and slope
+
+    vec3 A,B,C,D,N,co;
+
+    A = vec3( fragPos.x + f_width/size.x, fragPos.y, textureOffset(noiseTex, uv, ivec2(f_width,0)) );
+    B = vec3( fragPos.x - f_width/size.x, fragPos.y, textureOffset(noiseTex, uv, ivec2(-f_width,0)));
+    C = vec3(  fragPos.x, fragPos.y + f_height/size.y, textureOffset(noiseTex, uv, ivec2(0,f_height)));
+    D = vec3( fragPos.x, fragPos.y - f_height/size.y, textureOffset(noiseTex, uv, ivec2(0,-f_height)));
+    N = normalize( cross(normalize(A-B), normalize(C-D)) );
+/// TODO: Texture according to height and slope
     float slope = 1.0f-N.y;
 
-    vec3 c = vec3(0,0,0);
+    co = vec3(0,0,0);
 
-    float h=texture(noiseTex,uv).r;
+    h=(texture(noiseTex,uv).r+1.0)/2.0;
 
-    if (h < .1 ){
-        c = vec3(texture(water, uv));
-    } else {
-     c = vec3(texture(sand, uv));
+    if (h < 0.5 ){
+        co = vec3(texture(grass, uv));
+    } else if (h >=0.7){
+         co = vec3(texture(snow, uv));
+    }else {
+     co = vec3(texture(rock, uv).xyz);
     }
     /// HINT: Read noiseTex for height at uv
     /// TODO: Calculate ambient, diffuse, and specular lighting
     /// HINT: max(,) dot(,) reflect(,) normalize()
 
-float maxNDotH = max(0.0,dot(N,lightDir));
+    float maxNDotH;
+    maxNDotH = max(0.0,dot(N,lightDir));
 
- vec3 lambert = vec3(max(0.0, dot(N,lightDir)));
- vec3 specular = vec3(0.5,0.5,0.5)*(pow(maxNDotH,100));
- vec3 ambient = 0.5*vec3(0.6,0.3,0.3);
+     vec3 lambert, specular, ambient;
+     lambert = vec3(max(0.0, dot(N,lightDir)));
+     specular = vec3(0.5,0.5,0.5)*(pow(maxNDotH,10));
+     ambient = 0.5*vec3(0.6,0.3,0.3);
 
 //c += lambert+specular+ambient;
    // c = (N+ vec3(1.0)) / 2.0;
-    color = vec4(c,1);
+    color = vec4(co,1);
 }
 )"
